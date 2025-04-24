@@ -1,12 +1,12 @@
-FROM node:alpine
+FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm install
+COPY ./app /app/app
+COPY ./requirements /app/requirements
+COPY alembic.ini /app/
+COPY alembic /app/alembic
 
-COPY . .
+RUN pip install --no-cache-dir -r requirements/dev.txt
 
-EXPOSE 3000
-
-CMD ["npm", "run", "dev"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
