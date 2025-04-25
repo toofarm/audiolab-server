@@ -32,6 +32,8 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="email already taken")
 
     user = User(
+        first_name=user_data.first_name,
+        last_name=user_data.last_name,
         email=user_data.email,
         hashed_password=get_password_hash(user_data.password),
     )
@@ -45,13 +47,13 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = get_user_by_email(db, form_data.email)
+    user = get_user_by_email(db, form_data.username)
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     token = create_access_token(data={"sub": user.email}, expires_delta=timedelta(
         minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-    return {"access_token": token, "token_type": "bearer"}
+    return {"access_token": token, "email": user.email, "token_type": "bearer"}
 
 
 @router.get("/me")

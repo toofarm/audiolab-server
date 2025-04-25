@@ -1,9 +1,12 @@
 def test_register_user(client):
     response = client.post("/auth/register", json={
+        "first_name": "Test",
+        "last_name": "User",
         "email": "test@example.com",
         "password": "strongpassword"
     })
-    assert response.status_code == 201
+
+    assert response.status_code == 200
     data = response.json()
-    assert "id" in data
-    assert data["email"] == "test@example.com"
+    assert "access_token" in data
+    assert data["token_type"] == "bearer"

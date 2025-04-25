@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from app.schemas.user import TokenData
@@ -18,7 +18,7 @@ def get_password_hash(password):
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
-    expire = datetime.now(datetime.timezone.utc) + \
+    expire = datetime.now(timezone.utc) + \
         (expires_delta or timedelta(minutes=15))
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
@@ -27,6 +27,6 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 def decode_token(token: str) -> TokenData:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return TokenData(username=payload.get("sub"))
+        return TokenData(email=payload.get("sub"))
     except JWTError:
         return None
