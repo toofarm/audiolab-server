@@ -4,6 +4,7 @@ from pathlib import Path
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 
 from app.api.auth import get_current_user
+from app.lib.analyze_audio import analyze_audio
 
 router = APIRouter()
 
