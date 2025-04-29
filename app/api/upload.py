@@ -28,5 +28,16 @@ async def upload_audio(
     with file_path.open("wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
+    # Analyze the audio file
+    file.file.seek(0)
+    analysis = await analyze_audio(file)
+
+    if not analysis:
+        raise HTTPException(
+            status_code=400, detail="Failed to analyze audio file")
+
     # Return path or metadata (for now we just return the filename)
-    return {"filename": file_id}
+    return {
+        "id": file_id,
+        **analysis
+    }
