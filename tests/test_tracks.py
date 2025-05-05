@@ -49,3 +49,4 @@ def test_upload_audio(client: TestClient, token_headers: dict):
     assert "loudness_rms" in data
     assert "sample_rate" in data
     assert "content_type" in data
+    assert "spectrogram_base64" in data
