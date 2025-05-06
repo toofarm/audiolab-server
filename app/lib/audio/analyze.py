@@ -1,7 +1,12 @@
 import io
 import librosa
+import librosa.display
+import matplotlib.pyplot as plt
 import numpy as np
 from fastapi import File, UploadFile, HTTPException
+import base64
+
+from app.lib.audio.waveplot import plot_waveform
 
 
 async def analyze_audio(file: UploadFile = File(...)):
@@ -45,6 +50,27 @@ async def analyze_audio(file: UploadFile = File(...)):
     keys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
     key_estimate = keys[key_index]
 
+    # Generate a spectrogram (optional)
+    S = librosa.feature.melspectrogram(y=y, sr=sr)
+    S_dB = librosa.power_to_db(S, ref=np.max)
+
+    # Generate spectrogram plot
+    fig, ax = plt.subplots()
+    img = librosa.display.specshow(
+        S_dB, sr=sr, x_axis='time', y_axis='mel', ax=ax)
+    ax.set(title='Mel-frequency spectrogram')
+    plt.colorbar(img, format='%+2.0f dB', ax=ax)
+
+    # Convert plot to base64 string
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    plt.close(fig)
+    buf.seek(0)
+    spectrogram_base64 = base64.b64encode(buf.read()).decode('utf-8')
+
+    # Generate waveplot
+    waveplot_base64 = plot_waveform(y, sr)
+
     return {
         "filename": file.filename,
         "format": file.content_type,
@@ -53,4 +79,6 @@ async def analyze_audio(file: UploadFile = File(...)):
         "tempo_bpm": round(float(tempo), 2),
         "loudness_rms": round(float(rms), 5),
         "estimated_key": key_estimate,
+        "spectrogram_base64": spectrogram_base64,
+        "waveplot_base64": waveplot_base64,
     }

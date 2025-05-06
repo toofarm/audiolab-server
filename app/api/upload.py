@@ -47,7 +47,8 @@ async def upload_audio(
         sample_rate=analysis.get("sample_rate"),
         tempo_bpm=analysis.get("tempo_bpm"),
         loudness_rms=analysis.get("loudness_rms"),
-        estimated_key=analysis.get("estimated_key")
+        estimated_key=analysis.get("estimated_key"),
+        spectrogram_base64=analysis.get("spectrogram_base64"),
     )
 
     db.add(track)
