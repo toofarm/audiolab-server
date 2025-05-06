@@ -6,6 +6,8 @@ import numpy as np
 from fastapi import File, UploadFile, HTTPException
 import base64
 
+from app.lib.audio.waveplot import plot_waveform
+
 
 async def analyze_audio(file: UploadFile = File(...)):
     """
@@ -66,6 +68,9 @@ async def analyze_audio(file: UploadFile = File(...)):
     buf.seek(0)
     spectrogram_base64 = base64.b64encode(buf.read()).decode('utf-8')
 
+    # Generate waveplot
+    waveplot_base64 = plot_waveform(y, sr)
+
     return {
         "filename": file.filename,
         "format": file.content_type,
@@ -74,5 +79,6 @@ async def analyze_audio(file: UploadFile = File(...)):
         "tempo_bpm": round(float(tempo), 2),
         "loudness_rms": round(float(rms), 5),
         "estimated_key": key_estimate,
-        "spectrogram_base64": spectrogram_base64
+        "spectrogram_base64": spectrogram_base64,
+        "waveplot_base64": waveplot_base64,
     }

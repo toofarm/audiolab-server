@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.models.user import User
 from tests.utils import create_test_track
+from tests.fixtures import wav_file
 
 
 def test_get_tracks_authenticated(client: TestClient, db: Session, test_user: User, token_headers: dict):
@@ -27,16 +28,9 @@ def test_get_tracks_unauthenticated(client: TestClient):
     assert response.status_code == 401
 
 
-def test_upload_audio(client: TestClient, token_headers: dict):
-    # Simulate an in-memory WAV file
-    wav_data = (
-        b"RIFF$\x00\x00\x00WAVEfmt "  # RIFF/WAVE header
-        b"\x10\x00\x00\x00\x01\x00\x01\x00"  # PCM format
-        b"\x40\x1f\x00\x00\x80>\x00\x00"  # sample rate & byte rate
-        b"\x02\x00\x10\x00"              # block align & bits per sample
-        b"data\x00\x00\x00\x00"          # data chunk
-    )
-    files = {"file": ("test.wav", io.BytesIO(wav_data), "audio/wav")}
+def test_upload_audio(client: TestClient, token_headers: dict, wav_file: io.BytesIO):
+    # files = {"file": ("test.wav", io.BytesIO(wav_data), "audio/wav")}
+    files = {"file": ("test.wav", wav_file, "audio/wav")}
 
     response = client.post("/api/upload", files=files, headers=token_headers)
 
@@ -50,3 +44,4 @@ def test_upload_audio(client: TestClient, token_headers: dict):
     assert "sample_rate" in data
     assert "content_type" in data
     assert "spectrogram_base64" in data
+    assert "waveform_base64" in data

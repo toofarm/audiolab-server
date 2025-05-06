@@ -18,5 +18,6 @@ class Track(Base):
     loudness_rms = Column(Float)
     estimated_key = Column(String)
     spectrogram_base64 = Column(String, nullable=True)
+    waveform_base64 = Column(String, nullable=True)
 
     user = relationship("User", back_populates="tracks")
