@@ -23,6 +23,29 @@ def test_get_tracks_authenticated(client: TestClient, db: Session, test_user: Us
     assert data[1]["filename"] == "song2.wav"
 
 
+def test_get_track_authenticated(client: TestClient, db: Session, test_user: User, token_headers: dict):
+    # Create dummy data
+    track = create_test_track(db, test_user, filename="song1.wav")
+
+    response = client.get(f"/api/tracks/{track.id}", headers=token_headers)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["filename"] == "song1.wav"
+    assert data["id"] == track.id
+
+
+def test_get_track_not_found(client: TestClient, db: Session, test_user: User, token_headers: dict):
+    # Create dummy data
+    create_test_track(db, test_user, filename="song1.wav")
+
+    response = client.get("/api/tracks/99999", headers=token_headers)
+
+    assert response.status_code == 404
+    data = response.json()
+    assert data["detail"] == "Track not found"
+
+
 def test_get_tracks_unauthenticated(client: TestClient):
     response = client.get("/api/tracks")
     assert response.status_code == 401
