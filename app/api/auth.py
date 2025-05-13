@@ -1,14 +1,15 @@
 from jose import JWTError, jwt
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from app.models.user import User
+from app.models.revoked_token import RevokedToken
 from app.schemas.user import UserCreate, Token
 from app.core.security import get_password_hash, verify_password, create_access_token, decode_token
 from app.db.session import SessionLocal
 from app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 router = APIRouter()
 
@@ -31,6 +32,12 @@ def get_current_user(token: str = Depends(oauth2_scheme), db=Depends(get_db)) ->
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        jti = payload.get("jti")
+
+        if db.query(RevokedToken).filter(RevokedToken.jti == jti).first():
+            raise HTTPException(
+                status_code=401, detail="Token has been revoked")
+
         user_email: str = payload.get("sub")
         if user_email is None:
             raise credentials_exception
@@ -75,6 +82,23 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     token = create_access_token(data={"sub": user.email}, expires_delta=timedelta(
         minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     return {"access_token": token, "email": user.email, "token_type": "bearer"}
+
+
+@router.post("/logout")
+def logout(request: Request, db: Session = Depends(get_db)):
+    token = request.headers.get("Authorization").split()[1]
+    payload = jwt.decode(token, SECRET_KEY,
+                         algorithms=[ALGORITHM])
+    jti = payload.get("jti")
+
+    if jti:
+        revoked = RevokedToken(
+            jti=jti, expires_at=datetime.fromtimestamp(payload["exp"]))
+        db.add(revoked)
+        db.commit()
+        return {"msg": "Successfully logged out"}
+    else:
+        raise HTTPException(status_code=400, detail="Invalid token")
 
 
 @router.get("/me")

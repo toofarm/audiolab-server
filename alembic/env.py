@@ -1,6 +1,7 @@
 from app.db.session import Base, DATABASE_URL
 from app.models.user import User
 from app.models.track import Track
+from app.models.revoked_token import RevokedToken
 from logging.config import fileConfig
 import sys
 import os

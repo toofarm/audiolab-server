@@ -6,7 +6,6 @@ from app.lib.audio.waveplot import plot_waveform
 from tests.fixtures import wav_file
 
 
-# @pytest.mark.asyncio
 def test_plot_waveform(wav_file):
     # Load waveform from the BytesIO object using librosa
     # `sr=None` keeps original sample rate
