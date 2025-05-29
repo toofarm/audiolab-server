@@ -106,4 +106,16 @@ def read_users_me(token: str = Depends(oauth2_scheme)):
     token_data = decode_token(token)
     if not token_data or not token_data.email:
         raise HTTPException(status_code=401, detail="Invalid token")
-    return {"email": token_data.email}
+    return {
+        "email": token_data.email
+    }
+
+
+@router.get("/user")
+def get_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    user = get_current_user(token, db)
+    return {
+        "email": user.email,
+        "first_name": user.first_name,
+        "last_name": user.last_name
+    }
