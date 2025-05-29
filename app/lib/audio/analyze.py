@@ -29,12 +29,16 @@ async def analyze_audio(file: UploadFile = File(...)):
 
     # Load audio file using librosa
     try:
-        y, sr = librosa.load(audio_buffer, sr=None, mono=True)
+        y, sr = librosa.load(audio_buffer, mono=True)
     except Exception:
         raise HTTPException(
             status_code=400, detail="Could not load audio file")
 
     # Duration
+    if y is None or len(y) == 0:
+        raise HTTPException(
+            status_code=400, detail="Audio data is empty or could not be loaded"
+        )
     duration = librosa.get_duration(y=y, sr=sr)
 
     # Tempo (BPM)
@@ -81,4 +85,5 @@ async def analyze_audio(file: UploadFile = File(...)):
         "estimated_key": key_estimate,
         "spectrogram_base64": spectrogram_base64,
         "waveplot_base64": waveplot_base64,
+        "size": len(contents)
     }

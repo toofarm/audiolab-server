@@ -43,12 +43,15 @@ async def upload_audio(
         user_id=current_user.id,
         filename=file.filename,
         content_type=file.content_type,
-        duration=analysis.get("duration"),
+        duration_sec=analysis.get("duration_sec"),
         sample_rate=analysis.get("sample_rate"),
         tempo_bpm=analysis.get("tempo_bpm"),
         loudness_rms=analysis.get("loudness_rms"),
         estimated_key=analysis.get("estimated_key"),
         spectrogram_base64=analysis.get("spectrogram_base64"),
+        waveplot_base64=analysis.get("waveplot_base64"),
+        size=analysis.get("size", file.file._file.tell()
+                          if hasattr(file.file, '_file') else 0),
     )
 
     db.add(track)
