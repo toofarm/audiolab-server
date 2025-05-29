@@ -31,4 +31,4 @@ def plot_waveform(y, sr):
     # Encode the plot to base64
     waveplot_base64 = base64.b64encode(buf.read()).decode('utf-8')
 
-    return f"data:image/png;base64,{waveplot_base64}"
+    return f"{waveplot_base64}"

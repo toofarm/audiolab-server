@@ -11,13 +11,14 @@ class Track(Base):
 
     filename = Column(String, nullable=False)
     content_type = Column(String, nullable=False)
+    size = Column(Integer, nullable=True)
 
-    duration = Column(Float)
+    duration_sec = Column(Float)
     sample_rate = Column(Integer)
     tempo_bpm = Column(Float)
     loudness_rms = Column(Float)
     estimated_key = Column(String)
     spectrogram_base64 = Column(String, nullable=True)
-    waveform_base64 = Column(String, nullable=True)
+    waveplot_base64 = Column(String, nullable=True)
 
     user = relationship("User", back_populates="tracks")
