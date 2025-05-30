@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -65,3 +66,29 @@ def delete_track(
     db.delete(track)
     db.commit()
     return track
+
+
+@router.get("/tracks/{track_id}/stream")
+def stream_track(
+    track_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    track = db.query(Track).filter(Track.id == track_id,
+                                   Track.user_id == current_user.id).first()
+    if not track:
+        raise HTTPException(status_code=404, detail="Track not found")
+    if not track.file_path:
+        raise HTTPException(status_code=404, detail="Track file not found")
+    if not track.content_type:
+        raise HTTPException(
+            status_code=400, detail="Track content type not set")
+
+    def iter_file(file_path: str):
+        with open(file_path, "rb") as file:
+            while chunk := file.read(8192):
+                yield chunk
+
+    return StreamingResponse(iter_file(track.file_path),
+                             media_type=track.content_type,
+                             headers={"Content-Disposition": f"attachment; filename={track.filename}"})

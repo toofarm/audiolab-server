@@ -25,7 +25,7 @@ async def upload_audio(
 
     # Save file to temp location with a unique name
     ext = Path(file.filename).suffix
-    file_id = f"{uuid.uuid4()}{ext}"
+    file_id = f"{uuid.uuid4()}_{file.filename}"
     file_path = UPLOAD_DIR / file_id
 
     with file_path.open("wb") as buffer:
@@ -52,6 +52,7 @@ async def upload_audio(
         waveplot_base64=analysis.get("waveplot_base64"),
         size=analysis.get("size", file.file._file.tell()
                           if hasattr(file.file, '_file') else 0),
+        file_path=str(file_path)
     )
 
     db.add(track)

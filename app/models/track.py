@@ -20,5 +20,6 @@ class Track(Base):
     estimated_key = Column(String)
     spectrogram_base64 = Column(String, nullable=True)
     waveplot_base64 = Column(String, nullable=True)
+    file_path = Column(String, nullable=True)
 
     user = relationship("User", back_populates="tracks")

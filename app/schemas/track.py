@@ -14,6 +14,7 @@ class TrackOut(BaseModel):
     estimated_key: Optional[str]
     spectrogram_base64: Optional[str]
     waveplot_base64: Optional[str]
+    file_path: Optional[str]
 
     class Config:
         orm_mode = True
