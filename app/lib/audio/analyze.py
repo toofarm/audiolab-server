@@ -7,6 +7,7 @@ from fastapi import File, UploadFile, HTTPException
 import base64
 
 from app.lib.audio.waveplot import plot_waveform
+from app.lib.audio.features import extract_audio_features
 
 
 async def analyze_audio(file: UploadFile = File(...)):
@@ -75,6 +76,9 @@ async def analyze_audio(file: UploadFile = File(...)):
     # Generate waveplot
     waveplot_base64 = plot_waveform(y, sr)
 
+    # Extract Spotify-like audio features
+    audio_features = extract_audio_features(y, sr)
+
     return {
         "filename": file.filename,
         "format": file.content_type,
@@ -85,5 +89,17 @@ async def analyze_audio(file: UploadFile = File(...)):
         "estimated_key": key_estimate,
         "spectrogram_base64": spectrogram_base64,
         "waveplot_base64": waveplot_base64,
-        "size": len(contents)
+        "size": len(contents),
+        # Spotify-like features
+        "danceability": audio_features.get('danceability'),
+        "energy": audio_features.get('energy'),
+        "valence": audio_features.get('valence'),
+        "acousticness": audio_features.get('acousticness'),
+        "instrumentalness": audio_features.get('instrumentalness'),
+        "liveness": audio_features.get('liveness'),
+        "speechiness": audio_features.get('speechiness'),
+        "loudness": audio_features.get('loudness'),
+        "key": audio_features.get('key'),
+        "mode": audio_features.get('mode'),
+        "time_signature": audio_features.get('time_signature'),
     }

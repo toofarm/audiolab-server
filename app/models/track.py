@@ -22,4 +22,17 @@ class Track(Base):
     waveplot_base64 = Column(String, nullable=True)
     file_path = Column(String, nullable=True)
 
+    # Spotify-like audio features
+    danceability = Column(Float, nullable=True)
+    energy = Column(Float, nullable=True)
+    valence = Column(Float, nullable=True)
+    acousticness = Column(Float, nullable=True)
+    instrumentalness = Column(Float, nullable=True)
+    liveness = Column(Float, nullable=True)
+    speechiness = Column(Float, nullable=True)
+    loudness = Column(Float, nullable=True)
+    key = Column(String, nullable=True)
+    mode = Column(String, nullable=True)
+    time_signature = Column(Integer, nullable=True)
+
     user = relationship("User", back_populates="tracks")

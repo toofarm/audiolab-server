@@ -16,5 +16,18 @@ class TrackOut(BaseModel):
     waveplot_base64: Optional[str]
     file_path: Optional[str]
 
+    # Spotify-like audio features
+    danceability: Optional[float]
+    energy: Optional[float]
+    valence: Optional[float]
+    acousticness: Optional[float]
+    instrumentalness: Optional[float]
+    liveness: Optional[float]
+    speechiness: Optional[float]
+    loudness: Optional[float]
+    key: Optional[str]
+    mode: Optional[str]
+    time_signature: Optional[int]
+
     class Config:
         orm_mode = True

@@ -52,7 +52,19 @@ async def upload_audio(
         waveplot_base64=analysis.get("waveplot_base64"),
         size=analysis.get("size", file.file._file.tell()
                           if hasattr(file.file, '_file') else 0),
-        file_path=str(file_path)
+        file_path=str(file_path),
+        # Spotify-like features
+        danceability=analysis.get("danceability"),
+        energy=analysis.get("energy"),
+        valence=analysis.get("valence"),
+        acousticness=analysis.get("acousticness"),
+        instrumentalness=analysis.get("instrumentalness"),
+        liveness=analysis.get("liveness"),
+        speechiness=analysis.get("speechiness"),
+        loudness=analysis.get("loudness"),
+        key=analysis.get("key"),
+        mode=analysis.get("mode"),
+        time_signature=analysis.get("time_signature"),
     )
 
     db.add(track)
