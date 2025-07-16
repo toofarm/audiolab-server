@@ -11,5 +11,7 @@ class User(Base):
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
-    tracks = relationship("Track", back_populates="user",
-                          cascade="all, delete-orphan")
+    
+    # Relationships
+    tracks = relationship("Track", back_populates="user", cascade="all, delete-orphan")
+    samples = relationship("Sample", back_populates="user", cascade="all, delete-orphan")
