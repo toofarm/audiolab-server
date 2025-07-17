@@ -2,6 +2,9 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Add ffmpeg install here
+RUN apt-get update && apt-get install -y ffmpeg
+
 COPY ./app /app/app
 COPY ./requirements /app/requirements
 COPY alembic.ini /app/

@@ -2,6 +2,9 @@ from app.db.session import Base, DATABASE_URL
 from app.models.user import User
 from app.models.track import Track
 from app.models.revoked_token import RevokedToken
+from app.models.sample import Sample
+from app.models.project import Project
+from app.models.generated_audio import GeneratedAudio
 from logging.config import fileConfig
 import sys
 import os
