@@ -15,3 +15,5 @@ class User(Base):
     # Relationships
     tracks = relationship("Track", back_populates="user", cascade="all, delete-orphan")
     samples = relationship("Sample", back_populates="user", cascade="all, delete-orphan")
+    projects = relationship("Project", back_populates="user", cascade="all, delete-orphan")
+    generated_audio = relationship("GeneratedAudio", back_populates="user", cascade="all, delete-orphan")

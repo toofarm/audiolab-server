@@ -9,6 +9,7 @@ class Sample(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
     
     # Basic metadata
     name = Column(String(255), nullable=False)
@@ -61,6 +62,7 @@ class Sample(Base):
     
     # Relationships
     user = relationship("User", back_populates="samples")
+    project = relationship("Project", back_populates="samples")
     
     def __repr__(self):
         return f"<Sample(id={self.id}, name='{self.name}', category='{self.category}')>" 

@@ -13,7 +13,7 @@ class SampleBase(BaseModel):
 
 
 class SampleCreate(SampleBase):
-    pass
+    project_id: Optional[int] = None
 
 
 class SampleUpdate(BaseModel):
@@ -23,6 +23,7 @@ class SampleUpdate(BaseModel):
     tags: Optional[List[str]] = None
     mood: Optional[str] = None
     genre: Optional[str] = None
+    project_id: Optional[int] = None
 
 
 class SampleOut(SampleBase):
@@ -65,6 +66,9 @@ class SampleOut(SampleBase):
     # Timestamps
     created_at: datetime
     updated_at: datetime
+
+    # Project
+    project_id: Optional[int] = None
     
     class Config:
         from_attributes = True
