@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from datetime import datetime
+from app.schemas.sample import SampleOut
+from app.schemas.generated_audio import GeneratedAudioOut
 
 
 class ProjectBase(BaseModel):
