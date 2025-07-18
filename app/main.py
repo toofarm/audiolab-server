@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api import router as api_router
-from app.models import User, Track, Sample, RevokedToken  # Import all models to ensure relationships are set up
+from app.models import User, Track, Sample, Project, GeneratedAudio, RevokedToken  # Import all models to ensure relationships are set up
 
 app = FastAPI(title="Audio Analyzer API")
 
