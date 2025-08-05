@@ -15,6 +15,7 @@ from app.schemas.generated_audio import (
     GeneratedAudioCreate, GeneratedAudioUpdate, GeneratedAudioOut, 
     GeneratedAudioList, GenerationRequest, GenerationResponse
 )
+from app.lib.services.audio_diffusion_service import get_audio_diffusion_service
 
 router = APIRouter()
 
@@ -32,47 +33,44 @@ async def request_generation(
     """
     Request generation of new audio using AI models.
     """
-    # Verify project exists and belongs to user
-    project = db.query(Project).filter(
-        Project.id == generation_request.project_id,
-        Project.user_id == current_user.id
-    ).first()
-    
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-    
-    # Create generation record
-    generated_audio = GeneratedAudio(
-        user_id=current_user.id,
-        project_id=generation_request.project_id,
-        name=f"Generated Audio {datetime.utcnow().strftime('%Y-%m-%d %H:%M')}",
-        description="AI-generated audio",
-        generation_model="stable_audio",  # Default model
-        generation_prompt=generation_request.prompt,
-        source_samples=generation_request.source_sample_ids,
-        generation_settings=generation_request.generation_settings,
-        generation_status="pending",
-        filename="",  # Will be set when file is generated
-        file_path="",  # Will be set when file is generated
-        content_type="audio/wav"  # Default content type
-    )
-    
-    db.add(generated_audio)
-    db.commit()
-    db.refresh(generated_audio)
-    
-    # TODO: In a real implementation, you would:
-    # 1. Send the generation request to Stable Audio API
-    # 2. Handle the response asynchronously
-    # 3. Update the status to "processing" then "completed" or "failed"
-    # 4. Save the generated audio file
-    
-    return GenerationResponse(
-        generation_id=generated_audio.id,
-        status="pending",
-        estimated_completion_time=30.0,  # Example: 30 seconds
-        message="Generation request submitted successfully"
-    )
+    try:
+        # Get the audio diffusion service
+        audio_service = get_audio_diffusion_service()
+        
+        # Extract generation settings
+        generation_settings = generation_request.generation_settings or {}
+        duration_seconds = generation_settings.get("duration_seconds", 10.0)
+        num_samples = generation_settings.get("num_samples", 1)
+        guidance_scale = generation_settings.get("guidance_scale", 3.0)
+        num_inference_steps = generation_settings.get("num_inference_steps", 50)
+        seed = generation_settings.get("seed")
+        
+        # Generate audio using the service
+        generated_audio = await audio_service.generate_audio_async(
+            db=db,
+            user=current_user,
+            project_id=generation_request.project_id,
+            prompt=generation_request.prompt,
+            source_sample_ids=generation_request.source_sample_ids,
+            duration_seconds=duration_seconds,
+            num_samples=num_samples,
+            guidance_scale=guidance_scale,
+            num_inference_steps=num_inference_steps,
+            seed=seed
+        )
+        
+        return GenerationResponse(
+            generation_id=generated_audio.id,
+            status="pending",
+            estimated_completion_time=30.0,  # Example: 30 seconds
+            message="Generation request submitted successfully"
+        )
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to initiate audio generation: {str(e)}"
+        )
 
 
 @router.get("/generated-audio", response_model=GeneratedAudioList)
@@ -373,21 +371,16 @@ def get_generation_status(
     """
     Get the current status of a generation request.
     """
-    generated_audio = db.query(GeneratedAudio).filter(
-        GeneratedAudio.id == generated_id,
-        GeneratedAudio.user_id == current_user.id
-    ).first()
-    
-    if not generated_audio:
-        raise HTTPException(status_code=404, detail="Generated audio not found")
-    
-    return {
-        "id": generated_audio.id,
-        "status": generated_audio.generation_status,
-        "error": generated_audio.generation_error,
-        "created_at": generated_audio.created_at,
-        "updated_at": generated_audio.updated_at
-    }
+    try:
+        audio_service = get_audio_diffusion_service()
+        return audio_service.get_generation_status(db, generated_id, current_user.id)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to get generation status: {str(e)}"
+        )
 
 
 @router.post("/generated-audio/{generated_id}/retry")
@@ -399,31 +392,16 @@ def retry_generation(
     """
     Retry a failed generation request.
     """
-    generated_audio = db.query(GeneratedAudio).filter(
-        GeneratedAudio.id == generated_id,
-        GeneratedAudio.user_id == current_user.id
-    ).first()
-    
-    if not generated_audio:
-        raise HTTPException(status_code=404, detail="Generated audio not found")
-    
-    if generated_audio.generation_status not in ["failed", "cancelled"]:
-        raise HTTPException(status_code=400, detail="Can only retry failed or cancelled generations")
-    
-    # Reset status and error
-    generated_audio.generation_status = "pending"
-    generated_audio.generation_error = None
-    generated_audio.updated_at = datetime.utcnow()
-    
-    db.commit()
-    db.refresh(generated_audio)
-    
-    # TODO: Re-submit generation request to AI service
-    
-    return {
-        "message": "Generation retry initiated",
-        "status": "pending"
-    }
+    try:
+        audio_service = get_audio_diffusion_service()
+        return audio_service.retry_generation(db, generated_id, current_user.id)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to retry generation: {str(e)}"
+        )
 
 
 @router.post("/generated-audio/{generated_id}/cancel")
